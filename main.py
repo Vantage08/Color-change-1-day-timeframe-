@@ -6,7 +6,7 @@ import websocket
 
 # --- CONFIGURATION ---
 SYMBOL = "ETHUSDT"       # Switched to ETH Futures (uppercase)
-INTERVAL = "1"           # Timeframe in minutes ("1", "5", "15", "60")
+INTERVAL = "D"           # "D" for Daily Timeframe (Closes at 00:00 UTC / 1:00 AM WAT)
 MARKET_TYPE = "linear"   # "linear" handles USDT Perpetuals/Futures
 
 # Your MacroDroid Webhook Configuration
@@ -31,7 +31,7 @@ def on_message(ws, message):
     if "topic" in payload and "data" in payload:
         candle_data = payload["data"][0]
         
-        # True only when the candle officially closes
+        # True only when the daily candle officially closes
         is_candle_closed = candle_data.get("confirm", False)
         
         if is_candle_closed:
@@ -39,7 +39,7 @@ def on_message(ws, message):
             close_price = float(candle_data["close"])
             color = "green" if close_price >= open_price else "red"
             
-            print(f"[{SYMBOL}] Candle Closed {color.upper()}. Sending Webhook...")
+            print(f"[{SYMBOL}] Daily Candle Closed {color.upper()}. Sending Webhook...")
             
             # Instantly forward the data to MacroDroid
             try:
