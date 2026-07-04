@@ -3,7 +3,7 @@ import requests
 
 # --- CONFIGURATION ---
 SYMBOL = "ETHUSDT"
-INTERVAL = "1D"  # Changed from "D" to "1D" to match strict Bybit V5 API requirements
+INTERVAL = "1D"  
 MARKET_TYPE = "linear"
 
 # WunderTrading Webhook Configuration
@@ -33,11 +33,11 @@ def calculate_ema(prices, period):
 def run_strategy():
     print(f"Executing daily strategy check for {SYMBOL}...")
     
-    url = f"https://api.bybit.com/v5/market/kline?category={MARKET_TYPE}&symbol={SYMBOL}&interval={INTERVAL}&limit=50"
+    # Switched to api.bytick.com to bypass Railway data center IP restrictions
+    url = f"https://api.bytick.com/v5/market/kline?category={MARKET_TYPE}&symbol={SYMBOL}&interval={INTERVAL}&limit=50"
     try:
         response = requests.get(url, timeout=10)
         
-        # Check if response status is successful before processing JSON
         if response.status_code != 200:
             print(f"Bybit server returned a bad status code: {response.status_code}")
             print(f"Raw response: {response.text}")
