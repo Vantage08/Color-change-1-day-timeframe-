@@ -3,8 +3,7 @@ import requests
 
 # --- CONFIGURATION ---
 SYMBOL = "ETHUSDT"
-INTERVAL = "1D"  
-MARKET_TYPE = "linear"
+INTERVAL = "1d"  # Binance uses lowercase for daily intervals
 
 # WunderTrading Webhook Configuration
 WT_URL = "https://wtalerts.com/bot/other"
@@ -31,30 +30,26 @@ def calculate_ema(prices, period):
     return ema
 
 def run_strategy():
-    print(f"Executing daily strategy check for {SYMBOL}...")
+    print(f"Executing daily strategy check for {SYMBOL} via Binance API...")
     
-    # Switched to api.bytick.com to bypass Railway data center IP restrictions
-    url = f"https://api.bytick.com/v5/market/kline?category={MARKET_TYPE}&symbol={SYMBOL}&interval={INTERVAL}&limit=50"
+    # Using Binance Futures Public Market Data API Endpoint
+    url = f"https://fapi.binance.com/fapi/v1/klines?symbol={SYMBOL}&interval={INTERVAL}&limit=50"
     try:
         response = requests.get(url, timeout=10)
         
         if response.status_code != 200:
-            print(f"Bybit server returned a bad status code: {response.status_code}")
+            print(f"Binance server returned a bad status code: {response.status_code}")
             print(f"Raw response: {response.text}")
             return
             
         try:
-            data = response.json()
+            klines = response.json()
         except Exception as json_err:
             print(f"JSON Parsing failed. Raw response data was: {response.text}")
             print(f"Parsing error: {json_err}")
             return
 
-        if data.get("retCode") != 0:
-            print(f"Bybit API Error: {data.get('retMsg')}")
-            return
-            
-        klines = data["result"]["list"][::-1] 
+        # Binance arrays return data sorted from oldest to newest directly
         closes = [float(k[4]) for k in klines]
         
         last_closed_candle = klines[-1]
