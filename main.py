@@ -53,20 +53,22 @@ def run_strategy():
             print("Invalid or empty data format received.")
             return
 
-        # Extract closing prices (Index 4 in CoinGecko's OHLC format)
-        closes = [float(candle[4]) for candle in ohlc_data]
+        # Extract closing prices up to the last completed candle (excluding the live candle)
+        closes = [float(candle[4]) for candle in ohlc_data[:-1]]
         
-        # Identify the latest closed daily candle
-        last_closed_candle = ohlc_data[-1]
-        open_price = float(last_closed_candle[1])
-        close_price = float(last_closed_candle[4])
+        # FIX: Look at index -2 to analyze the completely closed historical daily candle, 
+        # ignoring the live candle at index -1 that just opened at midnight UTC.
+        completed_candle = ohlc_data[-2]
+        open_price = float(completed_candle[1])
+        close_price = float(completed_candle[4])
         
         color = "green" if close_price >= open_price else "red"
         
+        # Calculate EMAs strictly based on completed historical closing data
         ema5 = calculate_ema(closes, 5)
         ema20 = calculate_ema(closes, 20)
         
-        print(f"Daily Close: {close_price} | Color: {color.upper()} | EMA5: {ema5:.2f} | EMA20: {ema20:.2f}")
+        print(f"Yesterday's Closed Daily Candle -> Close: {close_price} | Color: {color.upper()} | EMA5: {ema5:.2f} | EMA20: {ema20:.2f}")
         
         if color == "green" and ema5 > ema20:
             print("EMA Bullish: Sending Long to WunderTrading...")
